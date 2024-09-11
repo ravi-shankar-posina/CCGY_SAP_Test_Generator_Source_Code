@@ -1,0 +1,50 @@
+.App {
+  font-family: Arial, sans-serif;
+  text-align: center;
+  padding: 20px;
+  background-color: #121212; /* Dark background */
+  color: #e0e0e0; /* Light text color */
+  height: 100vh;
+}
+
+.upload-section,
+.query-section {
+  margin: 20px 0;
+}
+
+input[type="text"] {
+  width: 100%;
+  max-width: 600px;
+  margin: 10px 0;
+  padding: 10px;
+  box-sizing: border-box;
+  background-color: #333; /* Dark input background */
+  color: #e0e0e0; /* Light text color */
+  border: 1px solid #555; /* Input border */
+  border-radius: 5px;
+}
+
+button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  cursor: pointer;
+  border-radius: 5px;
+  margin: 5px;
+}
+
+button:disabled {
+  background-color: #555;
+  cursor: not-allowed;
+}
+
+.response-section {
+  margin-top: 20px;
+  text-align: left;
+}
+
+.error-message {
+  color: red;
+  margin-top: 20px;
+}
