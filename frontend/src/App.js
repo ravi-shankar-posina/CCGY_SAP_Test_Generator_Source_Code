@@ -98,20 +98,18 @@ function App() {
 
   return (
     <div className={`h-screen ${darkMode ? "bg-gray-900 text-gray-100" : "bg-white text-gray-900"} flex flex-col items-center py-4`}>
-      {/* Dark mode toggle */}
 
       <div className="w-full max-w-3xl p-4 flex flex-col h-full">
         
       <div className="w-full max-w-3xl flex justify-end">
         <FaSun className={`mx-2 ${!darkMode ? "text-gray-900": "text-white"}`} />
         <ToggleButton
+          inactiveLabel=""
+          activeLabel=""
           value={darkMode}
           onToggle={toggleDarkMode}
         />
         <FaCloudMoon className={`mx-2 ${!darkMode ? "text-gray-900": "text-white"}`} />
-        <span className="ml-2 text-sm font-medium">
-          {darkMode ? "Dark Mode" : "Light Mode"}
-        </span>
       </div>
         <h1 className="text-3xl font-bold mb-6 text-center">
           SAP Test Case Generator
