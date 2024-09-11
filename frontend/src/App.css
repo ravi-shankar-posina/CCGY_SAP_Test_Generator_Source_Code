@@ -40,6 +40,7 @@ button:disabled {
 }
 
 .response-section {
+  max-width: 600px;
   margin-top: 20px;
   text-align: left;
 }
