@@ -4,6 +4,7 @@ import ReactMarkdown from "react-markdown";
 import { TailSpin } from "react-loader-spinner";
 import ToggleButton from "react-toggle-button";
 import { FaSun, FaCloudMoon } from "react-icons/fa";
+import img from "./assets/upload.webp"; // Import your image
 
 function App() {
   const [file, setFile] = useState(null);
@@ -16,6 +17,8 @@ function App() {
   const [uploadMessage, setUploadMessage] = useState("");
   const [uploadDisabled, setUploadDisabled] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
+  const [showImage, setShowImage] = useState(true);
+  const [showResponse, setShowResponse] = useState(false); // Control response visibility
 
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
@@ -25,6 +28,8 @@ function App() {
     setError("");
     setUploadMessage("");
     setUploadDisabled(false);
+    setShowImage(true);
+    setShowResponse(false);
   };
 
   const handleFileUpload = async () => {
@@ -75,6 +80,10 @@ function App() {
         query,
       });
       setResponse(res.data.response);
+      setShowImage(false); 
+      setTimeout(() => {
+        setShowResponse(true); 
+      }, 400); 
     } catch (err) {
       setError(
         err.response ? err.response.data.error : "Error querying the database."
@@ -97,111 +106,152 @@ function App() {
   }, [darkMode]);
 
   return (
-    <div className={`h-screen ${darkMode ? "bg-gray-900 text-gray-100" : "bg-white text-gray-900"} flex flex-col items-center py-4`}>
-
-      <div className="w-full max-w-3xl p-4 flex flex-col h-full">
-        
-      <div className="w-full max-w-3xl flex justify-end">
-        <FaSun className={`mx-2 ${!darkMode ? "text-gray-900": "text-white"}`} />
-        <ToggleButton
-          inactiveLabel=""
-          activeLabel=""
-          value={darkMode}
-          onToggle={toggleDarkMode}
-        />
-        <FaCloudMoon className={`mx-2 ${!darkMode ? "text-gray-900": "text-white"}`} />
-      </div>
-        <h1 className="text-3xl font-bold mb-6 text-center">
-          SAP Test Case Generator
-        </h1>
-        <div className="upload-section mb-6">
-          <input
-            type="file"
-            accept=".pdf"
-            onChange={handleFileChange}
-            className={`${
-              darkMode ? "bg-gray-800 text-gray-100" : "bg-gray-100 text-gray-900"
-            } border border-gray-300 rounded p-2 mb-2 w-full`}
-          />
-          <button
-            onClick={handleFileUpload}
-            disabled={fileUploadLoading || uploadDisabled}
-            className={`px-4 py-2 rounded ${
-              fileUploadLoading || uploadDisabled
-                ? "bg-gray-400 cursor-not-allowed"
-                : "bg-blue-500 hover:bg-blue-600"
-            } text-white`}
-          >
-            {fileUploadLoading ? (
-              <TailSpin height={24} width={24} color="#fff" />
-            ) : (
-              "Upload File"
-            )}
-          </button>
-          {uploadMessage && (
-            <div className="mt-4 text-green-500 text-center">
-              {uploadMessage}
-            </div>
-          )}
+    <div
+      className={`h-screen ${
+        darkMode ? "bg-gray-900 text-gray-100" : "bg-white text-gray-900"
+      } flex flex-col items-center justify-center py-4 `}
+    >
+      <div className="w-full flex justify-between items-center shadow-lg">
+        <div className="flex-1 text-center">
+          <h1 className="text-3xl font-bold mb-6">SAP Test Case Generator</h1>
         </div>
-        {fileProcessed && (
-          <div className="query-section mb-6">
+        <div className="flex items-center justify-end">
+          <FaSun
+            className={`mx-2 ${!darkMode ? "text-gray-900" : "text-white"}`}
+          />
+          <ToggleButton
+            inactiveLabel=""
+            activeLabel=""
+            value={darkMode}
+            onToggle={toggleDarkMode}
+          />
+          <FaCloudMoon
+            className={`mx-2 ${!darkMode ? "text-gray-900" : "text-white"}`}
+          />
+        </div>
+      </div>
+
+      <div className="w-full h-[calc(100vh-100px)] flex ">
+        <div className="w-1/4 px-10 py-4 flex flex-col justify-center shadow-md">
+          <div className="upload-section mb-6">
             <input
-              type="text"
-              placeholder="Enter your query..."
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
+              type="file"
+              accept=".pdf"
+              onChange={handleFileChange}
               className={`${
                 darkMode
-                  ? "bg-gray-800 text-gray-100 border-gray-700"
-                  : "bg-gray-100 text-gray-900 border-gray-300"
-              } border rounded p-2 mb-2 w-full`}
+                  ? "bg-gray-800 text-gray-100"
+                  : "bg-gray-100 text-gray-900"
+              } border border-gray-300 rounded p-2 mb-2 w-full cursor-pointer`}
             />
             <button
-              onClick={handleQuerySubmit}
-              disabled={queryLoading}
+              onClick={handleFileUpload}
+              disabled={fileUploadLoading || uploadDisabled}
               className={`px-4 py-2 rounded ${
-                queryLoading
+                fileUploadLoading || uploadDisabled
                   ? "bg-gray-400 cursor-not-allowed"
                   : "bg-blue-500 hover:bg-blue-600"
               } text-white`}
             >
-              {queryLoading ? (
+              {fileUploadLoading ? (
                 <TailSpin height={24} width={24} color="#fff" />
               ) : (
-                "Submit Query"
+                "Upload File"
               )}
             </button>
-            {response && (
-              <div
-                className={`response-section mt-6 text-left overflow-y-auto max-h-[calc(100vh-400px)] custom-scrollbar ${
-                  darkMode ? "bg-slate-800" : "bg-gray-100"
-                } p-4 rounded-lg`}
-              >
-                <ReactMarkdown>{response}</ReactMarkdown>
+            {uploadMessage && (
+              <div className="mt-4 text-green-500 text-center">
+                {uploadMessage}
               </div>
             )}
           </div>
-        )}
-        {error && (
-          <div className="error-message text-red-500 mt-6 text-center">
-            {error}
-          </div>
-        )}
+          {fileProcessed && (
+            <div className="query-section mb-6">
+              <input
+                type="text"
+                placeholder="Enter your query..."
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                className={`${
+                  darkMode
+                    ? "bg-gray-800 text-gray-100 border-gray-700"
+                    : "bg-gray-100 text-gray-900 border-gray-300"
+                } border rounded p-2 mb-2 w-full`}
+              />
+              <button
+                onClick={handleQuerySubmit}
+                disabled={queryLoading}
+                className={`px-4 py-2 rounded  ${
+                  queryLoading
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-blue-500 hover:bg-blue-600"
+                } text-white`}
+              >
+                {queryLoading ? (
+                  <TailSpin height={24} width={24} color="#fff" />
+                ) : (
+                  "Submit Query"
+                )}
+              </button>
+            </div>
+          )}
+          {error && (
+            <div className="error-message text-red-500 mt-6 text-center">
+              {error}
+            </div>
+          )}
+        </div>
+        <div
+          className={`w-3/4 py-4 flex flex-col justify-center${
+            darkMode ? "bg-slate-800" : "bg-gray-200"
+          }`}
+        >
+          {showResponse ? (
+            <div
+              className={`response-section text-left overflow-y-auto custom-scrollbar p-6 rounded-lg w-full fade-in`}
+            >
+              <h1 className="font-bold text-lg py-4">Response:</h1>
+              <ReactMarkdown>{response}</ReactMarkdown>
+            </div>
+          ) : (
+            <div
+              className={`w-full h-full flex flex-col justify-center items-center ${
+                showImage ? "fade-in" : "fade-out"
+              }`}
+            >
+              <img
+                src={img}
+                alt="Upload or query image"
+                className="mb-4 w-52 h-48"
+              />
+              <p className="text-lg text-center font-semibold">
+                Please upload a file and submit your query to see the response.
+              </p>
+            </div>
+          )}
+        </div>
       </div>
       <style jsx>{`
+        .fade-in {
+          opacity: 1;
+          transition: opacity 1s ease-in;
+        }
+        .fade-out {
+          opacity: 0;
+          transition: opacity 1s ease-out;
+        }
         .custom-scrollbar::-webkit-scrollbar {
           width: 10px;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb {
-          background-color: ${darkMode ? "#1f51ff" : "#9ca3af"}; /* Tailwind Gray-600 for dark mode and Gray-400 for light mode */
+          background-color: ${darkMode ? "#1f51ff" : "#9ca3af"};
           border-radius: 10px;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background-color: ${darkMode ? "#4b5563" : "#6b7280"}; /* Tailwind Gray-700 for dark mode and Gray-500 for light mode */
+          background-color: ${darkMode ? "#4b5563" : "#6b7280"};
         }
         .custom-scrollbar::-webkit-scrollbar-track {
-          background-color: ${darkMode ? "#1f2937" : "#d1d5db"}; /* Tailwind Gray-800 for dark mode and Gray-300 for light mode */
+          background-color: ${darkMode ? "#1f2937" : "#d1d5db"};
         }
       `}</style>
     </div>
