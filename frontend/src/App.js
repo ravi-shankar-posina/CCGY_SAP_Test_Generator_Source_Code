@@ -3,8 +3,14 @@ import axios from "axios";
 import ReactMarkdown from "react-markdown";
 import { TailSpin } from "react-loader-spinner";
 import ToggleButton from "react-toggle-button";
-import { FaSun, FaCloudMoon } from "react-icons/fa";
+import { FaSun, FaCloudMoon, FaHeadset, FaCode, FaTools } from "react-icons/fa";
 import img from "./assets/upload.webp"; // Import your image
+
+const options = [
+  { label: "SAP Test Case Generator", api: "query", icon: <FaHeadset /> },
+  { label: "ABAP Code Generator", api: "query", icon: <FaCode /> },
+  { label: "Smart Connector", api: "query", icon: <FaTools /> }, // SAP Support option
+];
 
 function App() {
   const [file, setFile] = useState(null);
@@ -18,7 +24,8 @@ function App() {
   const [uploadDisabled, setUploadDisabled] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
   const [showImage, setShowImage] = useState(true);
-  const [showResponse, setShowResponse] = useState(false); // Control response visibility
+  const [showResponse, setShowResponse] = useState(false);
+  const [selectedLabel, setSelectedLabel] = useState(options[0].label);
 
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
@@ -56,7 +63,7 @@ function App() {
       );
       setUploadMessage(res.data.message);
       setFileProcessed(true);
-      setUploadDisabled(true); // Disable upload after file is processed
+      setUploadDisabled(true);
     } catch (err) {
       setError(
         err.response ? err.response.data.error : "Error uploading file."
@@ -67,6 +74,11 @@ function App() {
   };
 
   const handleQuerySubmit = async () => {
+    if (!file) {
+      setError("Please upload a file first.");
+      return;
+    }
+
     if (!query) {
       setError("Please enter a query.");
       return;
@@ -76,14 +88,17 @@ function App() {
     setError("");
 
     try {
-      const res = await axios.post(`${process.env.REACT_APP_API_URL}/query`, {
-        query,
-      });
+      const res = await axios.post(
+        `${process.env.REACT_APP_API_URL}/${
+          selectedLabel === "SAP Test Case Generator" ? "query" : "sap-support"
+        }`,
+        { query }
+      );
       setResponse(res.data.response);
-      setShowImage(false); 
+      setShowImage(false);
       setTimeout(() => {
-        setShowResponse(true); 
-      }, 400); 
+        setShowResponse(true);
+      }, 400);
     } catch (err) {
       setError(
         err.response ? err.response.data.error : "Error querying the database."
@@ -91,6 +106,17 @@ function App() {
     }
 
     setQueryLoading(false);
+  };
+
+  const handleOptionClick = (api, label) => {
+    setSelectedLabel(label);
+    setQuery("");
+    setResponse("");
+    setShowResponse(false);
+    setShowImage(true);
+    setFileProcessed(false);
+    setFile(null); // Clear the file input
+    setUploadMessage("");
   };
 
   const toggleDarkMode = (value) => {
@@ -107,15 +133,14 @@ function App() {
 
   return (
     <div
-      className={`h-screen ${
+      className={`min-h-screen w-full ${
         darkMode ? "bg-gray-900 text-gray-100" : "bg-white text-gray-900"
-      } flex flex-col items-center justify-center py-4 `}
+      } flex flex-col items-center justify-start py-6 overflow-hidden`}
     >
-      <div className="w-full flex justify-between items-center shadow-lg">
-        <div className="flex-1 text-center">
-          <h1 className="text-3xl font-bold mb-6">SAP Test Case Generator</h1>
-        </div>
-        <div className="flex items-center justify-end">
+      {/* Header Section */}
+      <div className="w-full flex justify-between items-center px-6 py-4 shadow-lg fixed top-0 z-10">
+        <h1 className="text-3xl font-bold">{selectedLabel}</h1>
+        <div className="flex items-center">
           <FaSun
             className={`mx-2 ${!darkMode ? "text-gray-900" : "text-white"}`}
           />
@@ -130,130 +155,128 @@ function App() {
           />
         </div>
       </div>
-
-      <div className="w-full h-[calc(100vh-100px)] flex ">
-        <div className="w-1/4 px-10 py-4 flex flex-col justify-center shadow-md">
-          <div className="upload-section mb-6">
-            <input
-              type="file"
-              accept=".pdf"
-              onChange={handleFileChange}
-              className={`${
-                darkMode
-                  ? "bg-gray-800 text-gray-100"
-                  : "bg-gray-100 text-gray-900"
-              } border border-gray-300 rounded p-2 mb-2 w-full cursor-pointer`}
-            />
-            <button
-              onClick={handleFileUpload}
-              disabled={fileUploadLoading || uploadDisabled}
-              className={`px-4 py-2 rounded ${
-                fileUploadLoading || uploadDisabled
-                  ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-blue-500 hover:bg-blue-600"
-              } text-white`}
-            >
-              {fileUploadLoading ? (
-                <TailSpin height={24} width={24} color="#fff" />
-              ) : (
-                "Upload File"
-              )}
-            </button>
-            {uploadMessage && (
-              <div className="mt-4 text-green-500 text-center">
-                {uploadMessage}
-              </div>
-            )}
-          </div>
-          {fileProcessed && (
-            <div className="query-section mb-6">
-              <input
-                type="text"
-                placeholder="Enter your query..."
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                className={`${
-                  darkMode
-                    ? "bg-gray-800 text-gray-100 border-gray-700"
-                    : "bg-gray-100 text-gray-900 border-gray-300"
-                } border rounded p-2 mb-2 w-full`}
-              />
-              <button
-                onClick={handleQuerySubmit}
-                disabled={queryLoading}
-                className={`px-4 py-2 rounded  ${
-                  queryLoading
-                    ? "bg-gray-400 cursor-not-allowed"
-                    : "bg-blue-500 hover:bg-blue-600"
-                } text-white`}
-              >
-                {queryLoading ? (
-                  <TailSpin height={24} width={24} color="#fff" />
-                ) : (
-                  "Submit Query"
-                )}
-              </button>
-            </div>
-          )}
-          {error && (
-            <div className="error-message text-red-500 mt-6 text-center">
-              {error}
-            </div>
-          )}
-        </div>
+      <div className="w-full flex flex-col md:flex-row pt-16 h-calc(100vh - 10px)">
+        {/* Sidebar */}
         <div
-          className={`w-3/4 py-4 flex flex-col justify-center${
-            darkMode ? "bg-slate-800" : "bg-gray-200"
-          }`}
+          className={`md:w-1/4 p-6 h-[580px] ${
+            darkMode ? " text-gray-100 " : " text-gray-900"
+          } overflow-auto shadow`}
         >
-          {showResponse ? (
-            <div
-              className={`response-section text-left overflow-y-auto custom-scrollbar p-6 rounded-lg w-full fade-in`}
-            >
-              <h1 className="font-bold text-lg py-4">Response:</h1>
-              <ReactMarkdown>{response}</ReactMarkdown>
-            </div>
+          <ul className="space-y-4">
+            {options.map((option, index) => (
+              <li
+                key={index}
+                onClick={() => handleOptionClick(option.api, option.label)}
+                className={`flex items-center text-sm font-bold cursor-pointer p-3 rounded-lg transition duration-300 ${
+                  selectedLabel === option.label
+                    ? "bg-gray-500 dark:bg-gray-700 text-gray-100"
+                    : ""
+                } hover:bg-gray-500 hover:text-gray-100  dark:hover:bg-gray-700`}
+              >
+                {option.icon}
+                <span className="ml-2">{option.label}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Main Content */}
+        <div
+          className={`w-3/4 flex items-center justify-center py-8 px-8 overflow-auto max-h-screen `}
+        >
+          {selectedLabel === "SAP Test Case Generator" ? (
+            showResponse ? (
+              <div
+                className={`w-3/4 p-6 rounded-lg shadow-md overflow-auto max-h-96 ${
+                  darkMode
+                    ? "bg-gray-800 text-gray-100"
+                    : "bg-gray-100 text-gray-900"
+                }`}
+              >
+                <h1 className="font-bold text-lg mb-4">Response:</h1>
+                <ReactMarkdown>{response}</ReactMarkdown>
+              </div>
+            ) : (
+              <div className="w-full flex flex-col items-center">
+                <p
+                  className={`text-gray-400 mb-4 ${
+                    darkMode ? "text-gray-300" : "text-gray-800"
+                  }`}
+                >
+                  Upload a file to get response for your query.
+                </p>
+                <div className="w-full max-w-md px-4">
+                  <input
+                    type="file"
+                    accept=".pdf"
+                    onChange={handleFileChange}
+                    className={`w-full p-2 border ${
+                      darkMode
+                        ? "bg-gray-800 text-gray-100"
+                        : "bg-gray-100 text-gray-900"
+                    } rounded mb-4`}
+                  />
+                  <button
+                    onClick={handleFileUpload}
+                    disabled={fileUploadLoading || uploadDisabled}
+                    className={`w-full py-2 mb-4 rounded ${
+                      fileUploadLoading || uploadDisabled
+                        ? "bg-gray-400 cursor-not-allowed"
+                        : "bg-blue-500 hover:bg-blue-600"
+                    } text-white`}
+                  >
+                    {fileUploadLoading ? (
+                      <TailSpin height={24} width={24} color="#fff" />
+                    ) : (
+                      "Upload File"
+                    )}
+                  </button>
+                  {uploadMessage && (
+                    <div className="text-green-500 text-center">
+                      {uploadMessage}
+                    </div>
+                  )}
+                </div>
+
+                {fileProcessed && (
+                  <div className="w-full max-w-md px-4">
+                    <input
+                      type="text"
+                      placeholder="Enter your query..."
+                      value={query}
+                      onChange={(e) => setQuery(e.target.value)}
+                      className={`w-full p-2 border ${
+                        darkMode
+                          ? "bg-gray-800 text-gray-100"
+                          : "bg-gray-100 text-gray-900"
+                      } rounded mb-4`}
+                    />
+                    <button
+                      onClick={handleQuerySubmit}
+                      disabled={queryLoading}
+                      className={`w-full py-2 rounded ${
+                        queryLoading
+                          ? "bg-gray-400 cursor-not-allowed"
+                          : "bg-blue-500 hover:bg-blue-600"
+                      } text-white`}
+                    >
+                      {queryLoading ? (
+                        <TailSpin height={24} width={24} color="#fff" />
+                      ) : (
+                        "Submit Query"
+                      )}
+                    </button>
+                  </div>
+                )}
+              </div>
+            )
           ) : (
-            <div
-              className={`w-full h-full flex flex-col justify-center items-center ${
-                showImage ? "fade-in" : "fade-out"
-              }`}
-            >
-              <img
-                src={img}
-                alt="Upload or query image"
-                className="mb-4 w-52 h-48"
-              />
-              <p className="text-lg text-center font-semibold">
-                Please upload a file and submit your query to see the response.
-              </p>
+            <div className="w-full flex justify-center">
+              {/* <img src={img} alt="Illustration" className="h-[480px]" /> */}
             </div>
           )}
         </div>
       </div>
-      <style jsx>{`
-        .fade-in {
-          opacity: 1;
-          transition: opacity 1s ease-in;
-        }
-        .fade-out {
-          opacity: 0;
-          transition: opacity 1s ease-out;
-        }
-        .custom-scrollbar::-webkit-scrollbar {
-          width: 10px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-          background-color: ${darkMode ? "#1f51ff" : "#9ca3af"};
-          border-radius: 10px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background-color: ${darkMode ? "#4b5563" : "#6b7280"};
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-          background-color: ${darkMode ? "#1f2937" : "#d1d5db"};
-        }
-      `}</style>
     </div>
   );
 }
