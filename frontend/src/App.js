@@ -49,7 +49,7 @@ function App() {
     setUploadMessage("");
 
     const formData = new FormData();
-    formData.append("file", file);
+    formData.append("files", file);  // Changed from "file" to "files" to match backend
 
     try {
       const res = await axios.post(
@@ -74,8 +74,8 @@ function App() {
   };
 
   const handleQuerySubmit = async () => {
-    if (!file) {
-      setError("Please upload a file first.");
+    if (!fileProcessed) {
+      setError("Please upload and process a file first.");
       return;
     }
 
@@ -89,19 +89,22 @@ function App() {
 
     try {
       const res = await axios.post(
-        `${process.env.REACT_APP_API_URL}/${
-          selectedLabel === "SAP Test Case Generator" ? "query" : "sap-support"
-        }`,
-        { query }
+        `${process.env.REACT_APP_API_URL}/query`,
+        { query },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
       );
-      setResponse(res.data.response);
+      setResponse(res.data.test_cases.join('\n'));  // Join test cases into a single string
       setShowImage(false);
       setTimeout(() => {
         setShowResponse(true);
       }, 400);
     } catch (err) {
       setError(
-        err.response ? err.response.data.error : "Error querying the database."
+        err.response ? err.response.data.error : "Error generating test cases."
       );
     }
 
@@ -208,7 +211,7 @@ function App() {
                 <div className="w-full max-w-md px-4">
                   <input
                     type="file"
-                    accept=".pdf"
+                    accept=".pdf,.txt,.docx"
                     onChange={handleFileChange}
                     className={`w-full p-2 border ${
                       darkMode
